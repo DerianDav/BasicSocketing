@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <math.h>
 
+/* Author: Derian Davila Acuna
+   File: server.c
+   Purpose: it recieves the messages from the client(client.c) and prints it out along with the length of the message
+*/
+
 int main(int args, char const *argv[]){
 	//get the server port from the command line
 	if(args != 2){

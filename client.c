@@ -6,6 +6,10 @@
 #include <math.h>
 #include <stdlib.h>
 
+/* Author: Derian Davila Acuna
+   File: client.c
+   Purpose: connects to a server (server.c) and sends it messanges from stdin
+*/
 void trimMessage(char buf[]);
 
 int main(int args, char const *argv[]){
@@ -42,6 +46,7 @@ int main(int args, char const *argv[]){
 	trimMessage(buf);
 	bufLength = strlen(buf) -1;
 
+	//first it sends the length of the input string then it sends the message itself
 	send(sockfd,(int32_t *) &bufLength , 4, 0);
 	send(sockfd, buf, bufLength, 0); 
 	}
