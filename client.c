@@ -1,43 +1,49 @@
-#include <stdio.h.>
+#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <stdint.h>
+#include <math.h>
+#include <stdlib.h>
+
+void trimMessage(char buf[]);
 
 int main(int args, char const *argv[]){
-	if(args != -2){
-		fprintf(stderr, "Invalid amount of arguments\n");
+	
+	if(args != 3){
+		fprintf(stderr, "Invalid amount of arguments");
 		return -1;
 	}
 
 	int sockfd = socket(PF_INET, SOCK_STREAM, 0);
-	if(sockfd == < 0){
+	if(sockfd < 0){
 		fprintf(stderr, "Socket Error\n");
 		return -1;
 	}
 
 	//sets up the sockaddr_in
-	struct sockaddr_in severAddr;
-	memset(serverAdd, '0', sizeof(serverAddr));
+	struct sockaddr_in serverAddr = {0};
+	//memset(&serverAddr, '0', sizeof(serverAddr));
 	serverAddr.sin_family = PF_INET;
-	serverAddr.sin_port = htons(argv[1]);
-	inet_aton(argv[0], serverAddr.sin_addr);
+	serverAddr.sin_port = htons(stringToInt(argv[2]));
+	inet_pton(PF_INET, argv[1], &serverAddr.sin_addr);
 	
-	if(connet(sockfd, &serverAdr, sizeof(serverAddr)) < 0){
-		fprintf(stderr, "Connection Failed");
+	if(connect(sockfd,(struct sockaddr*) &serverAddr, sizeof(serverAddr)) < 0){
+		fprintf(stderr, "Connection Failed\n");
 		return -1;
 	}
 	
-	while(true){
+	while(1){
 	//read input
-	char buf[1024];
-	int32 bufLength;
-	
-	if(getline(&buf, 1024*sizeof(char) stdin) == EOF)
+	char *buf = malloc(1024);
+	size_t bufLength = 1024;
+	if(getline(&buf,&bufLength, stdin) == EOF)
 		break; 
 	trimMessage(buf);
-	bufLength = strlen(buf);
+	bufLength = strlen(buf) -1;
 
-	send(sockfd, buf, 
+	send(sockfd,(int32_t *) &bufLength , 4, 0);
+	send(sockfd, buf, bufLength, 0); 
 	}
 	
 	close(sockfd);
@@ -46,5 +52,16 @@ int main(int args, char const *argv[]){
 
 //removes the null and newline characters from the message
 void trimMessage(char buf[]){
+	if(buf[strlen(buf)-2] == '\n')
+		buf[strlen(buf)-2] = '\0';
+}
 
+//converts a string of numbers into an integer
+int stringToInt(char string[]){
+	int ret = 0;
+	int index;
+	int indexFromLast = 0;
+	for(index = strlen(string)-1; index >= 0; index--, indexFromLast++)
+		ret += ((string[index]-'0') * (int)pow(10,indexFromLast));
+	return ret;
 }

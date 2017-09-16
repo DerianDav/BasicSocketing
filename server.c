@@ -3,48 +3,66 @@
 #include <string.h>
 #include <netinet/in.h>
 #include <stdlib.h>
+#include <math.h>
 
-int main(int argc, char const *argv[]){
+int main(int args, char const *argv[]){
+	//get the server port from the command line
+	if(args != 2){
+		fprintf(stderr, "Invalid Amount of Arguments\n");
+		return -1;
+	}
+	//transforms the port string into an int
+	int serverPort = 0;
+	int index;
+	int indexFromLast = 0;
+	for(index = strlen(argv[1]) - 1; index >= 0; index--, indexFromLast++){
+		serverPort += ((argv[1][index] - '0') * (int)pow(10,indexFromLast));
+	}
 	int sock = socket(PF_INET, SOCK_STREAM, 0);
 	if(sock < 0){
-		fprintf(stderr, "Socket Error");
+		fprintf(stderr, "Socket Error\n");
 		return -1;
 	}
 
 	struct sockaddr_in serverAddr;
-	memset(serverAddr, '0', sizeof(serverAddr));
+	memset(&serverAddr, '0', sizeof(serverAddr));
 	serverAddr.sin_family = PF_INET;
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-	serverAddr.sin_port = htons(arv[0]);
+	serverAddr.sin_port = htons(serverPort);
 
-	if(bind(sock, &serverAddr, sizeof(serverAddr)) < 0){
-		fprintf(stderr, "Bind Error");
-		return -1;
-	}
+	int opt = 1;
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
 	
-	if(listen(socket,5) < 0){
-		fprintf(stderr, "Listen Error");
+	if(bind(sock, (struct sockaddr *) &serverAddr, sizeof(serverAddr)) < 0){
+		fprintf(stderr, "Bind Error\n");
 		return -1;
 	}
 
-	while(true){
-		int newSock = accept(s, (struct sockaddr *) &sockAddr, 
-			(socklen_t *) sizeof(sockAddr))
+	if(listen(sock,5) < 0){
+		fprintf(stderr, "Listen Error\n");
+		return -1;
+	}
+
+	int addLen = sizeof(serverAddr);
+	while(1){
+		int newSock = accept(sock, (struct sockaddr *) &serverAddr, (socklen_t *) &addLen);
 		if(newSock  < 0){
-			fprintf(stderr, "Accept error");
+			fprintf(stderr, "Accept Error\n");
 			return -1;
 		}
 		
-		char buf[1024];
-		int = len;
+	
+		int32_t len = 0;
 		//while connection is open
-		while(len = recv(newSock, buf, sizeof(buf), 0)){
-			buf[1024] = '\0';
-			printf("%s\n", buf);
+		while(recv(newSock, &len, 32, 0) > 0){
+			char buf[len];
+			recv(newSock, buf, len, 0);
+			buf[len] = '\0';
+			printf("%d\n%s\n", len, buf);			
 		}
 		
-		close(n);
-
+		close(newSock);
+		break;//erase to have the server waiting for another connection after the inital client exits
 	}
 
 }

@@ -1,9 +1,12 @@
+.PHONY : all clean
+
+all: client server
 
 client: client.c
-	gcc -Wall -g -o lineSort client.c 
+	gcc client.c -lm -o client
 
 server: server.c
-	gcc -Wall -g -o server server.c
+	gcc server.c -lm -o server
 
 clean:
 	-rm server
